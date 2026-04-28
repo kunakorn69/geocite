@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signUpWithEmail } from "@/lib/firebase/auth";
 import { createUserDoc } from "@/lib/firestore/users";
@@ -20,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export function SignupForm() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -58,7 +56,13 @@ export function SignupForm() {
         user.displayName ?? email.split("@")[0],
       );
 
-      router.push("/dashboard");
+      const idToken = await user.getIdToken();
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+      if (!res.ok) throw new Error("Session creation failed");
+      window.location.href = "/dashboard";
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to create account.";

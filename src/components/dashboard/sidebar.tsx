@@ -60,7 +60,11 @@ function SidebarContent() {
         <Button
           variant="ghost"
           className="w-full justify-start gap-3"
-          onClick={() => signOutUser()}
+          onClick={async () => {
+            await signOutUser();
+            await fetch("/api/logout", { method: "POST" });
+            window.location.href = "/";
+          }}
         >
           <LogOut className="h-4 w-4" />
           Sign Out

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Menu, LogOut, User, CreditCard } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { signOutUser } from "@/lib/firebase/auth";
@@ -21,11 +20,11 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { user } = useAuth();
-  const router = useRouter();
 
   async function handleSignOut() {
     await signOutUser();
-    router.push("/");
+    await fetch("/api/logout", { method: "POST" });
+    window.location.href = "/";
   }
 
   const initials = user?.displayName

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signInWithEmail } from "@/lib/firebase/auth";
 import {
@@ -17,7 +16,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 export function LoginForm() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -29,8 +27,14 @@ export function LoginForm() {
     setLoading(true);
 
     try {
-      await signInWithEmail(email, password);
-      router.push("/dashboard");
+      const credential = await signInWithEmail(email, password);
+      const idToken = await credential.user.getIdToken();
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+      if (!res.ok) throw new Error("Session creation failed");
+      window.location.href = "/dashboard";
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to sign in.";

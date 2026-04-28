@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -29,16 +30,22 @@ const PRO_FEATURES = [
   "Export to multiple formats",
 ];
 
-const PRO_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID ?? "";
-
 export function Pricing() {
   const { user } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleSubscribe() {
     if (!user) return;
-    const url = await createCheckoutSession(PRO_PRICE_ID, user.uid);
-    if (url) {
-      window.location.href = url;
+    setError(null);
+    setLoading(true);
+    try {
+      const url = await createCheckoutSession(user.uid);
+      if (url) window.location.href = url;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -105,16 +112,17 @@ export function Pricing() {
                 ))}
               </ul>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-col gap-2">
               {user ? (
-                <Button className="w-full" onClick={handleSubscribe}>
-                  Subscribe
+                <Button className="w-full" onClick={handleSubscribe} disabled={loading}>
+                  {loading ? "Redirecting..." : "Subscribe"}
                 </Button>
               ) : (
                 <Button render={<Link href="/signup" />} className="w-full">
                   Sign Up to Subscribe
                 </Button>
               )}
+              {error && <p className="text-sm text-destructive">{error}</p>}
             </CardFooter>
           </Card>
         </div>

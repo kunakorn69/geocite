@@ -2,7 +2,10 @@
 
 import { getStripeServer } from "./server";
 
-export async function createCheckoutSession(priceId: string, uid: string) {
+export async function createCheckoutSession(uid: string) {
+  const priceId = process.env.STRIPE_PRO_PRICE_ID;
+  if (!priceId) throw new Error("STRIPE_PRO_PRICE_ID is not set in .env.local");
+
   const stripe = getStripeServer();
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
